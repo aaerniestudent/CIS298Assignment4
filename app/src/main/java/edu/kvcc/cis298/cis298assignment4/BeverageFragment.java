@@ -1,6 +1,8 @@
 package edu.kvcc.cis298.cis298assignment4;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
@@ -8,6 +10,7 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
@@ -26,6 +29,11 @@ public class BeverageFragment extends Fragment {
     private EditText mPack;
     private EditText mPrice;
     private CheckBox mActive;
+    private Button mContactButton;
+    private Button mSendDetailsButton;
+    private String mSelectedEmail;
+    private String mSelectedName;
+    private String mEmailSubject = "Beverage App Item Information";
 
     //Private var for storing the beverage that will be displayed with this fragment
     private Beverage mBeverage;
@@ -64,6 +72,11 @@ public class BeverageFragment extends Fragment {
         mPack = (EditText) view.findViewById(R.id.beverage_pack);
         mPrice = (EditText) view.findViewById(R.id.beverage_price);
         mActive = (CheckBox) view.findViewById(R.id.beverage_active);
+
+        mContactButton = (Button) view.findViewById(R.id.choose_contact);
+        mContactButton.setOnClickListener(this);
+        mSendDetailsButton = (Button) view.findViewById(R.id.send_details);
+        mSendDetailsButton.setOnClickListener(this);
 
         //Set the widgets to the properties of the beverage
         mId.setText(mBeverage.getId());
@@ -153,5 +166,99 @@ public class BeverageFragment extends Fragment {
 
         //Lastley return the view with all of this stuff attached and set on it.
         return view;
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.choose_contact:
+                selectContact();
+                break;
+            case R.id.send_details:
+                sendDetails();
+                break;
+        }
+    }
+
+    private void selectContact() {
+        doLaunchContactPicker();
+    }
+
+    private void doLaunchContactPicker() {
+        Intent contactPickerIntent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
+        startActivityForResult(contactPickerIntent, CONTACT_PICKER_RESULT);
+    }
+
+    private void sendDetails() {
+        String[] addresses = new String[1];
+           addresses[0] = mSelectedEmail;
+        composeEmail(addresses, mEmailSubject, composeEmailBody());
+        mSendDetailsButton.setEnabled(false);
+    }
+
+    private String composeEmailBody() {
+        String isActiveString;
+        if(mBeverage.isActive()) {
+            isActiveString = "Currently Active";
+        } else {
+            isActiveString = "Currently InActive";
+        }
+        String body = mSelectedName + ",\n\n" +
+                "Please Review the Following Beverage.\n\n" +
+                mBeverage.getId() + "\n" +
+                mBeverage.getName() + "\n" +
+                mBeverage.getPack() + "\n" +
+                mBeverage.getPrice() + "\n" +
+                isActiveString;
+        return body;
+    }
+
+    private void composeEmail(String[] address, String subject, String body) {
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("*/*");
+        intent.putExtra(Intent.EXTRA_EMAIL, address);
+        intent.putExtra(Intent.EXTRA_SUBJECT, subject);
+        intent.putExtra(Intent.EXTRA_TEXT, body);
+        if(intent.resolveActivity(getActivity().getPackageManager()) != null) {
+            startActivity(intent);
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(resultCode == Activity.RESULT_OK) {
+            switch (requestCode) {
+                case CONTACT_PICKER_RESULT:
+                    Cursor cursor = null;
+                    String email = "";
+                    String contactName = "";
+                    try {
+                        Uri result = data.getData();
+                        String id = result.getLastPathSegment();
+                        cursor = getActivity().getContentResolver().query(Email.CONTENT_URI,
+                                null, Email.CONTACT_ID + "=?", new String[] { id },
+                                null);
+                        int emailIdx = cursor.getColumnIndex(Email.DATA);
+                        int nameIdx = cursor.getColumnIndex(Contacts.DISPLAY_NAME);
+                        if (cursor.moveToFirst()) {
+                            email = cursor.getString(emailIdx);
+                            contactName = cursor.getString(nameIdx);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    } finally {
+                        if (cursor != null) {
+                            cursor.close();
+                        }
+                        if(email.length() > 1) {
+                            mSelectedEmail = email;
+                            mSelectedName = contactName;
+                            mSendDetailsButton.setEnabled(true);
+                        }
+                        if (email.length() == 0) {
+                            Toast.makeText(getActivity(), "No email found for contact.", Toast.LENGTH_LONG).show();+                        }
+                    } break;
+            }
+        }
     }
 }

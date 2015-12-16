@@ -37,10 +37,6 @@ public class BeverageCollection {
     private BeverageCollection(Context context) {
         //Make a new list to hold the beverages
         mBeverages = new ArrayList<>();
-        //Set the context to the one that is passed in
-        mContext = context;
-        //Call the private method to load the beverage list
-        loadBeverageList();
     }
 
     //Getters
@@ -56,43 +52,41 @@ public class BeverageCollection {
         }
         return null;
     }
+    public void setBeverage(List<Beverage> beverages) {
+        mBeverages = beverages;
+    }
+
+    public void addBeverage(Beverage beverage) {
+        mBeverages.add(beverage);
+    }
 
     //Method to load the beverage list from a CSV file
-    private void loadBeverageList() {
-
+    //private void loadBeverageList() {
         //Define a scanner
-        Scanner scanner = null;
-
-        try {
-
+     //   Scanner scanner = null;
+     //   try {
             //Instanciate a new scanner
-            scanner = new Scanner(mContext.getResources().openRawResource(R.raw.beverage_list));
-
+     //       scanner = new Scanner(mContext.getResources().openRawResource(R.raw.beverage_list));
             //While the scanner has another line to read
-            while (scanner.hasNextLine()) {
-
+     //       while (scanner.hasNextLine()) {
                 //Get the next line and split it into parts
-                String line = scanner.nextLine();
-                String parts[] = line.split(",");
-
+     //           String line = scanner.nextLine();
+     //           String parts[] = line.split(",");
                 //Assign each part to a local var
-                String id = parts[0];
-                String name = parts[1];
-                String pack = parts[2];
-
+     //           String id = parts[0];
+     //           String name = parts[1];
+     //           String pack = parts[2];
                 //setup some vars for doing parsing
-                double price = Double.parseDouble(parts[3]);
-                boolean active = ((parts[4].equals("True")));
-
+    //           double price = Double.parseDouble(parts[3]);
+    //          boolean active = ((parts[4].equals("True")));
                 //Add the beverage to the list
-                mBeverages.add(new Beverage(id, name, pack, price, active));
+    //            mBeverages.add(new Beverage(id, name, pack, price, active));
             }
-
         //catch any errors that occur and finally close the scanner
-        } catch (Exception e) {
-            Log.e("Read CSV", e.toString());
-        } finally {
-            scanner.close();
-        }
-    }
+     //   } catch (Exception e) {
+     //       Log.e("Read CSV", e.toString());
+    //    } finally {
+    //       scanner.close();
+    //   }
+    //}
 }

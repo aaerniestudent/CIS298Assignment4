@@ -33,6 +33,21 @@ public abstract class SingleFragmentActivity extends FragmentActivity {
                     .add(R.id.fragment_container, fragment)
                     .commit(); //must commit the transaction to make it complete
         }
+    private void retrieveBeveragesFromHTTP(){
+        ServerActivity serverActivity = new ServerActivity(this);
+        serverActivity.fetchBeveragesAsyncTask(new BeverageCallback() {
+            @Override
+            public void beverageCallback(boolean status) {
+                if (status) {
+                    FragmentManager manager = getSupportFragmentManager();
+                    BeverageListFragment f2 = (BeverageListFragment) manager.findFragmentById(R.id.fragment_container);
+                    f2.runUpdate();
+                } else {
+                    toastError();
+                }
+            }
+        });
+
     }
 
     //Define a abstract method that must be overridden in child classes to return a fragment to use.

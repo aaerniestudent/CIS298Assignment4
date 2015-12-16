@@ -2,7 +2,7 @@
 
 ## Author
 
-
+Anthony Aernie
 
 ## Description
 
@@ -74,7 +74,7 @@ The application must do all of the above work to get the extra credit. In order 
 
 ## Known Problems, Issues, And/Or Errors in the Program
 
-
+I just was like all over the place... It is not done.
 
 # Original Assignment README
 
